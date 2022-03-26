@@ -39,6 +39,7 @@ export default {
     },
     refresh() {
       // console.log("------");
+      // console.log("refresh被调用了");
       this.scroll && this.scroll.refresh();
     },
     getScrollY() {
@@ -59,6 +60,8 @@ export default {
       probeType: this.probeType, //由于不是所有用到我的组件都需要实时监听 所以 这个是否进行实时监听的决定权 就交给使用者
       click: true,
       pullUpLoad: this.pullUpLoad, //是否上拉加载，决定权交给使用者
+      disableTouch: false,
+      observeImage: true,
     });
 
     // 2.监听滚动位置(前面的这个if纯属为了严谨)

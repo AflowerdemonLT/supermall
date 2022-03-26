@@ -1,9 +1,9 @@
 <template>
   <div class="goods-item" @click="itemClick">
-    <img :src="goodsItem.show.img" alt="" @load="imageLoad" />
+    <img :src="showImage" alt="" @load="imageLoad" />
     <div class="goods-info">
       <p>{{ goodsItem.title }}</p>
-      <span class="price">{{ goodsItem.price }}</span>
+      <span class="price">￥{{ goodsItem.price }}</span>
       <span class="collect">{{ goodsItem.cfav }}</span>
     </div>
   </div>
@@ -28,9 +28,21 @@ export default {
     imageLoad() {
       // 向事件总线发送事件
       this.$bus.$emit("itemImageLoad");
+
+      // 还有除了取消全局事件监听的方法之外 还有一种路由监听的方法
+      // if(this.$route.path.indexOf("/home") !== -1){
+      //   this.$emit("homeImgaeLoad")
+      // }else if(this.$route.path.indexOf("/detail") !== -1){
+      //   this.$emit("detailImageLoad")
+      // }
     },
     itemClick() {
       this.$router.push("/detail/" + this.goodsItem.iid);
+    },
+  },
+  computed: {
+    showImage() {
+      return this.goodsItem.image || this.goodsItem.show.img;
     },
   },
 };

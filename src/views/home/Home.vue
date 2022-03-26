@@ -51,12 +51,14 @@ import NavBar from "components/common/navbar/NavBar.vue";
 import TabControl from "components/content/tabControl/TabControl.vue";
 import GoodsList from "components/content/goods/GoodsList.vue";
 import Scroll from "components/common/scroll/Scroll.vue";
-import BackTop from "components/content/backTop/BackTop";
 
 import { getHomeMultidata, getHomeGoods } from "network/home.js";
 import { debounce } from "common/utils";
+import { itemListenerMixin, showBackTop } from "common/mixin";
+
 export default {
   name: "Home",
+  mixins: [itemListenerMixin, showBackTop],
   components: {
     HomeSwiper,
     RecommendView,
@@ -65,7 +67,6 @@ export default {
     TabControl,
     GoodsList,
     Scroll,
-    BackTop,
   },
   data() {
     return {
@@ -77,10 +78,11 @@ export default {
         sell: { page: 0, list: [] },
       },
       currentType: "pop",
-      isShowBackTop: false,
       tabOffsetTop: 0,
       isTabFixed: false,
       saveY: 0,
+      // 这里原本有个itemImageListener: null,的 现在它
+      // 被我放到混入 mixin里面了
     };
   },
   computed: {
@@ -93,12 +95,17 @@ export default {
   },
   activated() {
     //活跃(进来)
-    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+
     this.$refs.scroll.refresh(); //最好是回来的时候重新计算一次可滚动区域
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
   },
   deactivated() {
-    //离开(离开的时候记录当前滚动到的y值)
+    //1.离开(离开的时候记录当前滚动到的y值)
     this.saveY = this.$refs.scroll.getScrollY();
+
+    // 2.取消全局事件事件监听
+    // --->这一切都是为了只在 hom 或 detail 是当前页面时 才监听图片加载
+    this.$bus.$off("itemImageLoad", this.itemImageListener);
   },
   created() {
     // 一般情况下载create中只写主要逻辑
@@ -112,16 +119,16 @@ export default {
   },
   mounted() {
     // 不要在created中使用 $refs
-
     // 3.监听item中图片加载完成
     // 通过debounce函数可以让refresh不被频繁调用这么多次了
     // 也就是不一一计算 积累在那里 等到我设置的delay结束后 总的计算一次
     // 这样
-    const refresh = debounce(this.$refs.scroll.refresh, 200);
-
-    this.$bus.$on("itemImageLoad", () => {
-      refresh();
-    });
+    // const refresh = debounce(this.$refs.scroll.refresh, 200);
+    // // 对监听事件进行保存
+    // this.itemImageListener = () => {
+    //   refresh();
+    // };
+    // this.$bus.$on("itemImageLoad", this.itemImageListener);
   },
   methods: {
     /* 
@@ -153,26 +160,29 @@ export default {
           this.currentType = "sell";
           break;
       }
+      // 通过refs拿到两个tabControl组件对象
       // 让它们两个都和最新点击的这个index保持一致就可以解决两个tabcontrol不一致的问题了
       this.$refs.tabControl1.currentIndex = index;
       this.$refs.tabControl2.currentIndex = index;
     },
-    backClick() {
-      //拿到Scroll的组件对象 this.$refs.scroll
-      // 访问这个组件中的 scoll对象 this.$refs.scroll.scroll
-      // 然后调用scrollTo(0,0)方法
-      // this.$refs.scroll.scroll.scrollTo(0, 0, 500);
-      // 后来我直接在Scroll组件中封装了一个scrollTo方法
-      this.$refs.scroll.scrollTo(0, 0);
-    },
+    // 被我抽离到mixin中了
+    // backClick() {
+    //   //拿到Scroll的组件对象 this.$refs.scroll
+    //   // 访问这个组件中的 scoll对象 this.$refs.scroll.scroll
+    //   // 然后调用scrollTo(0,0)方法
+    //   // this.$refs.scroll.scroll.scrollTo(0, 0, 500);
+    //   // 后来我直接在Scroll组件中封装了一个scrollTo方法
+    //   this.$refs.scroll.scrollTo(0, 0);
+    // },
     //监听滚动
     contentScroll(position) {
-      // 1.判断backTop是否显示
-      this.isShowBackTop = -position.y > 1000;
+      // 1.判断backTop是否显示(这个函数也被我抽离到mixin中了)
+      this.showBackTop(position);
 
       // 2.决定tabControl 是否吸顶（position : fixed）
       this.isTabFixed = -position.y > this.tabOffsetTop;
     },
+
     loadMore() {
       this.getHomeGoods(this.currentType); //当前记录的是谁 我就加载谁
       // finishPullUp 在下面 getHomeGoods 请求数据完成后调用
