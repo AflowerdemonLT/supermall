@@ -3,8 +3,8 @@
     <div class="item-selector">
       <!-- 根据商品对象模型里面的isChecked决定是否显示选中 -->
       <check-button
-        :isChecked="product.checked"
-        @click.native="checkedClick"
+        :is-checked="product.checked"
+        @click.native="checkedClick(product.iid)"
       ></check-button>
     </div>
     <div class="item-img">
@@ -35,8 +35,10 @@ export default {
     },
   },
   methods: {
-    checkedClick() {
+    checkedClick(iid) {
+      // console.log(iid);
       this.product.checked = !this.product.checked;
+      // this.$store.dispatch("aChangeChecked", iid);
     },
   },
 };

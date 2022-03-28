@@ -1,16 +1,21 @@
 <template>
   <div class="cart">
+    <!-- 1.导航 -->
     <nav-bar class="nav-bar">
       <div slot="center">购物车({{ length }})</div>
     </nav-bar>
-
+    <!-- 2.列表 -->
     <cart-list></cart-list>
+
+    <!-- 3.底部汇总 -->
+    <cart-bottom-bar></cart-bottom-bar>
   </div>
 </template>
 
 <script>
 import NavBar from "components/common/navbar/NavBar.vue";
 import CartList from "./childComponents/CartList.vue";
+import CartBottomBar from "./childComponents/CartBottomBar.vue";
 
 import { mapGetters } from "vuex";
 export default {
@@ -18,6 +23,7 @@ export default {
   components: {
     NavBar,
     CartList,
+    CartBottomBar,
   },
   computed: {
     // 两种语法（mapGetters辅助函数 -> 仅仅是将store中的getter 映射到局部计算属性）

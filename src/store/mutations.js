@@ -1,4 +1,4 @@
-import { ADD_COUNTER, ADD_TO_CART, CHANGE_CHECKED } from './mutation-types'
+import { ADD_COUNTER, ADD_TO_CART, CHANGE_CHECKED, CHECKED_ALL } from './mutation-types'
 
 export default {
 
@@ -11,5 +11,15 @@ export default {
         state.cartList.push(payload)
 
     },
+    [CHANGE_CHECKED](state, payload) {
+        payload.checked = !payload.checked
+
+
+    },
+    [CHECKED_ALL](state, payload) {
+        for (let item of payload) {
+            item.checked = true
+        }
+    }
 
 }

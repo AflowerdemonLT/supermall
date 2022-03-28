@@ -31,7 +31,7 @@
       <div class="so-hot">热门推荐</div>
       <goods-list :goods="recommendList" ref="recommend"></goods-list>
     </scroll>
-    <detail-bottom-bar @addCart="addCart"></detail-bottom-bar>
+    <detail-bottom-bar @addCart="addToCart"></detail-bottom-bar>
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
@@ -53,6 +53,8 @@ import DetailBottomBar from "./childComponents/DetailBottomBar.vue";
 
 import { debounce } from "common/utils";
 import { itemListenerMixin, showBackTop } from "../../common/mixin";
+
+import { mapActions } from "vuex";
 
 import {
   getDetail,
@@ -194,6 +196,8 @@ export default {
     }, 100);
   },
   methods: {
+    ...mapActions(["addCart"]),
+
     goodsImageLoad() {
       // console.log("图片加载");
       // 因为我这里使用了混入（现在使用的是混入中的防抖函数）
@@ -253,7 +257,7 @@ export default {
       this.showBackTop(position);
     },
     // 监听加入购物车事件
-    addCart() {
+    addToCart() {
       // 1.获取购物车需要展示的信息
       const product = {};
       product.image = this.topImages[0];
@@ -264,7 +268,17 @@ export default {
 
       // 2.将商品添加到购物车里
       // this.$store.commit("addCart", product);
-      this.$store.dispatch("addCart", product);
+      // 想要监听 actions的执行状态 可以在它里边加一个 promise 通过返回值进行监听
+      // this.$store.dispatch("addCart", product).then((res) => {
+      //   console.log(res);
+      // });
+
+      // 特别的，actions映射到这里
+      this.addCart(product).then((res) => {
+        this.$toast.show(res);
+      });
+
+      // 3.添加到购物车成功
     },
   },
 };

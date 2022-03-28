@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- 
+1.app.message修改数据. Vue内部是如何监听message数据的改变
+*Object.defineProperty ->监听对象属性的改变
+
+2.当数据发生改变，Vue是如何知道要通知哪些人，界面发生刷新
+*发布订阅这模式
+-->
+    <div id="app">
+        {{message}}
+        {{message}}
+        {{message}}
+        {{message}}
+    </div>
+    <script>
+        const obj = {
+            message: '哈哈哈',
+            name: 'why'
+        }
+
+        Object.keys(obj).forEach(key => {
+            let value = obj[key]//拿到属性值
+
+            // 监听value值的改变
+            // defineProperty ->定义属性
+            Object.defineProperty(obj, key, {
+                set(newValue) {
+                    console.log('监听' + key + '改变');
+                    // 告诉谁了？谁用告诉谁 谁在用呢?
+                    // 根据解析html代码，获取到哪些人有在用属性
+                    // 张三/李四/王五
+                    value = newValue
+                },
+                get() {
+                    // 谁用这个属性谁就会调用一次get
+                    // 张三：get ->update
+                    // 李四：get ->update
+                    // 王五：get ->update
+                    console.log('获取' + key + '对应的值');
+
+                    return value
+                }
+            })
+        })
+
+        // 发布者订阅者模式
+        // Dep 用于存储所有对我这个属性有依赖的东西
+        // constructor ->构造器
+        // subscribe ->订阅
+        // this.subscribe = [] 用来记录现在谁在订阅我这个属性的
+        // Watcher -> 观察者(监听、观察)其实是用于创建订阅者对象的
+        class Dep {//*发布者
+            constructor() {
+                this.subscribe = []
+            }
+            addSub(watcher) {
+                this.subscribe.push(watcher)
+            }
+            notify() {
+                // 找到所有的订阅者，然后让他自己去调用他的update
+                this.subscribe.forEach(item => {
+                    item.update()
+                })
+            }
+        }
+
+        // 用这个类 一会就可以创建 张三李四王五 对象了
+        class Watcher {//*订阅者
+            constructor(name) {
+                this.name = name
+            }
+            update() {
+                console.log(this.name + '发生了update');
+            }
+        }
+
+        const dep = new Dep()
+
+        const w1 = new Watcher('张三')
+        dep.addSub(w1)
+        const w2 = new Watcher('李四')
+        dep.addSub(w2)
+        const w3 = new Watcher('王五')
+        dep.addSub(w1)
+        dep.notify()
+
+
+    </script>
+
+    <script src="./node_modules/vue/dist/vue.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                message: '哈哈哈'
+            }
+        })
+    </script>
+</body>
+
+</html>

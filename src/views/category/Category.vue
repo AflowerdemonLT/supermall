@@ -1,158 +1,164 @@
 <template >
-  <div class="wrapper" ref="aaa">
-    <ul class="content">
-      <!-- 1.无论是否设置 click：true ，button都可以点击 -->
-      <button @click="btnClick">按钮</button>
-      <!-- 2.必须设置 click：true 那么div才能监听点击 -->
-      <div @click="divClick">哈哈哈</div>
-      <li>列表1</li>
-      <li>列表2</li>
-      <li>列表3</li>
-      <li>列表4</li>
-      <li>列表5</li>
-      <li>列表6</li>
-      <li>列表7</li>
-      <li>列表8</li>
-      <li>列表9</li>
-      <li>列表10</li>
-      <li>列表11</li>
-      <li>列表12</li>
-      <li>列表13</li>
-      <li>列表14</li>
-      <li>列表15</li>
-      <li>列表16</li>
-      <li>列表17</li>
-      <li>列表18</li>
-      <li>列表19</li>
-      <li>列表20</li>
-      <li>列表21</li>
-      <li>列表22</li>
-      <li>列表23</li>
-      <li>列表24</li>
-      <li>列表25</li>
-      <li>列表26</li>
-      <li>列表27</li>
-      <li>列表28</li>
-      <li>列表29</li>
-      <li>列表30</li>
-      <li>列表31</li>
-      <li>列表32</li>
-      <li>列表33</li>
-      <li>列表34</li>
-      <li>列表35</li>
-      <li>列表36</li>
-      <li>列表37</li>
-      <li>列表38</li>
-      <li>列表39</li>
-      <li>列表40</li>
-      <li>列表41</li>
-      <li>列表42</li>
-      <li>列表43</li>
-      <li>列表44</li>
-      <li>列表45</li>
-      <li>列表46</li>
-      <li>列表47</li>
-      <li>列表48</li>
-      <li>列表49</li>
-      <li>列表50</li>
-      <li>列表51</li>
-      <li>列表52</li>
-      <li>列表53</li>
-      <li>列表54</li>
-      <li>列表55</li>
-      <li>列表56</li>
-      <li>列表57</li>
-      <li>列表58</li>
-      <li>列表59</li>
-      <li>列表60</li>
-      <li>列表61</li>
-      <li>列表62</li>
-      <li>列表63</li>
-      <li>列表64</li>
-      <li>列表65</li>
-      <li>列表66</li>
-      <li>列表67</li>
-      <li>列表68</li>
-      <li>列表69</li>
-      <li>列表70</li>
-      <li>列表71</li>
-      <li>列表72</li>
-      <li>列表73</li>
-      <li>列表74</li>
-      <li>列表75</li>
-      <li>列表76</li>
-      <li>列表77</li>
-      <li>列表78</li>
-      <li>列表79</li>
-      <li>列表80</li>
-      <li>列表81</li>
-      <li>列表82</li>
-      <li>列表83</li>
-      <li>列表84</li>
-      <li>列表85</li>
-      <li>列表86</li>
-      <li>列表87</li>
-      <li>列表88</li>
-      <li>列表89</li>
-      <li>列表90</li>
-      <li>列表91</li>
-      <li>列表92</li>
-      <li>列表93</li>
-      <li>列表94</li>
-      <li>列表95</li>
-      <li>列表96</li>
-      <li>列表97</li>
-      <li>列表98</li>
-      <li>列表99</li>
-      <li>列表100</li>
-    </ul>
+  <div class="category">
+    <nav-bar class="navbar">
+      <div slot="center">商品分类</div>
+    </nav-bar>
+    <category-menu
+      :categorise="categorise"
+      @kindsClick="kindsClick"
+      :mCategoryData="showSubcategory"
+      class="content"
+      @meunTabClick="meunTabClick"
+      :showCategoryDetail="showCategoryDetail"
+    ></category-menu>
   </div>
 </template>
 
 <script>
-import BScroll from "better-scroll";
+import NavBar from "../../components/common/navbar/NavBar.vue";
+import Scroll from "../../components/common/scroll/Scroll.vue";
+
+import CategoryMenu from "./childComponents/CategoryMenu.vue";
+
+import {
+  getCategoryData,
+  getSubCategory,
+  getCategoryDetail,
+} from "../../network/category";
 
 export default {
+  components: {
+    NavBar,
+    CategoryMenu,
+    Scroll,
+  },
   name: "Catetory",
   data() {
     return {
-      scroll: null,
+      categoryKindsInfo: [],
+      KindsInfoTitles: [],
+      categorise: [],
+      categoryData: {},
+      currentIndex: -1,
+      currentType: "pop",
     };
   },
+
+  created() {
+    // 获取总的数据
+    // getCategoryData().then((res) => {
+    //   console.log(res.data);
+    //   this.categoryKindsInfo = res.data.category.list;
+    //   for (let item of this.categoryKindsInfo) {
+    //     this.KindsInfoTitles.push(item.title);
+    //   }
+    // });
+    // 左侧分类数据
+    // 根据maitKey值获取不同类型的数据
+    // getSubCategory(598).then((res) => {
+    //   console.log(res);
+    // });
+    // // 分类顶部导航栏的请求 miniWallkey值 加上type
+    // getCategoryDetail(50532, "pop").then((res) => {
+    //   console.log(res);
+    // });
+
+    // 1.初始化数据
+    this.getCategory();
+  },
   methods: {
-    btnClick() {
-      console.log("我被点击了");
+    // 1.获取分类数据
+    getCategory() {
+      getCategoryData().then((res) => {
+        // 1.获取分类数据
+        this.categorise = res.data.category.list;
+
+        // 2.初始化每个类别的子数据
+        for (let i = 0; i < this.categorise.length; i++) {
+          this.categoryData[i] = {
+            subcategories: {},
+            categoryDetail: {
+              pop: [],
+              new: [],
+              sell: [],
+            },
+          };
+        }
+        // 3.请求第一个分类数据
+        this.getSubCategories(0);
+      });
     },
-    divClick() {
-      console.log("我被点击了哈哈哈");
+    // 获取右边有图片的那个数据
+    getSubCategories(index) {
+      this.currentIndex = index;
+      const maitKey = this.categorise[index].maitKey;
+      // console.log(maitKey);
+      getSubCategory(maitKey).then((res) => {
+        this.categoryData[index].subcategories = res.data;
+        // 这里解构的原因是 初始化的时候是个数组，但是定义的categoryData是个对象
+        // 所以要将数组解构后 再将数据放入这个对象中
+        this.categoryData = { ...this.categoryData };
+        this.getCategoryDetails("pop");
+        this.getCategoryDetails("sell");
+        this.getCategoryDetails("new");
+      });
+    },
+    getCategoryDetails(type) {
+      // 1.通过currentIndex 获取请求的 miniWallkey
+      const miniWallkey = this.categorise[this.currentIndex].miniWallkey;
+      //  2.发送请求，传入miniWallkey 和 type
+      getCategoryDetail(miniWallkey, type).then((res) => {
+        // 3.将获取到的导航栏下数据保存下来
+        this.categoryData[this.currentIndex].categoryDetail[type] = res;
+        this.categoryData = { ...this.categoryData };
+      });
+    },
+    kindsClick(index) {
+      this.getSubCategories(index);
+    },
+    meunTabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = "pop";
+          break;
+        case 1:
+          this.currentType = "sell";
+          break;
+        case 2:
+          this.currentType = "new";
+          break;
+      }
     },
   },
-  created() {},
-  mounted() {
-    //template被挂载到dom 上时被调用
-    this.scroll = new BScroll(document.querySelector(".wrapper"), {
-      probeType: 3, //所有滚动都能监听
-      pullUpLoad: true, //上拉加载更多
-      click: true,
-    });
-    this.scroll.on("scroll", (position) => {
-      // console.log(position);
-    });
-    this.scroll.on("pullingUp", () => {
-      console.log("上拉加载更多");
-      this.scroll.finishPullUp();
-    });
+  computed: {
+    // 导航栏上方的数据
+    showSubcategory() {
+      if (this.currentIndex == -1) return {};
+      return this.categoryData[this.currentIndex].subcategories;
+    },
+    // 导航栏下方的数据
+    showCategoryDetail() {
+      if (this.currentIndex == -1) return [];
+      return this.categoryData[this.currentIndex].categoryDetail[
+        this.currentType
+      ];
+    },
   },
 };
 </script>
 
 <style scoped>
-.wrapper {
-  /* 原生的滚动 */
-  height: 150px;
-  background-color: red;
+.category {
+  position: relative;
+  height: 100vh;
+}
+.navbar {
+  background-color: var(--color-tint);
+  color: #fff;
+  font-weight: 700;
+}
+.content {
+  height: calc(100% - 44px - 49px);
   overflow: hidden;
-  /* 相当于包含了hidden 它会自动隐藏n */
-  /* overflow-y: scroll; */
 }
 </style>
